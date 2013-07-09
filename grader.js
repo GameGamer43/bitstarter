@@ -71,6 +71,12 @@ var clone = function(fn) {
     return fn.bind({});
 };
 
+var doCheck = function(dom) {
+    var checkJson = checkHtmlFile(dom, program.checks);
+    var outJson = JSON.stringify(checkJson, null, 4);
+    console.log(outJson);
+};
+
 if(require.main == module) {
     program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
@@ -79,13 +85,12 @@ if(require.main == module) {
         .parse(process.argv);
 
     if(program.url) {
-        var html = cheerioUrl(restler.get(program.url));
-	var checkJson = checkHtmlFile(html, program.checks);
+	restler.get(program.url).on('complete', function (result) {
+		doCheck(result);
+	});
     } else {
-	var checkJson = checkHtmlFile(program.file, program.checks);
+	doCheck(program.file);
     }
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
